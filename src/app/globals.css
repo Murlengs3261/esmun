@@ -1,26 +1,307 @@
 @import "tailwindcss";
 
+/* ═══════════════════════════════════════════════════════════════════════
+   ESMUN · Tokens
+   Nombres por función, nunca por apariencia. El vocabulario visual sale
+   de la credencial y del sello: esquina viva en todo, jerarquía por
+   reglas y bandas en lugar de sombras.
+   ═══════════════════════════════════════════════════════════════════════ */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Neutros sesgados a índigo — nunca gris puro */
+  --bg-base:              #f5f5fa;
+  --bg-sunken:            #ececf4;
+  --surface:              #ffffff;
+  --surface-raised:       #ffffff;
+  --surface-inverse:      #14162a;
+  --surface-alt:          #f9f9fd;
+
+  --border:               #dcdce8;
+  --border-control:       #8b8fa6;
+  --border-strong:        #14162a;
+
+  --text-primary:         #14162a;
+  --text-secondary:       #41455f;
+  --text-tertiary:        #5a5e7a;
+  --text-disabled:        #6f7288;
+  --text-on-accent:       #ffffff;
+  --text-on-inverse:      #edeef7;
+
+  /* Acento de marca: índigo. Nunca verde, rojo ni ámbar — esos tres
+     colores son de uso exclusivo del veredicto del escáner. */
+  --accent:               #3b49c9;
+  --accent-hover:         #2f3ba8;
+  --accent-pressed:       #26308a;
+  --accent-subtle:        #eef0fc;
+
+  /* Semánticos del veredicto. Mismos hex en ambos temas: lo que resuelve
+     un escaneo no puede depender de la preferencia del teléfono. */
+  --state-granted:        #0b6b3a;
+  --state-granted-ink:    #f2f7f3;
+  --state-granted-soft:   #e8f3ec;
+  --state-duplicate:      #8e1b1b;
+  --state-duplicate-ink:  #fdf2f2;
+  --state-duplicate-soft: #fdf2f2;
+  --state-invalid:        #7a4a00;
+  --state-invalid-ink:    #fff8ea;
+  --state-invalid-soft:   #fff8ea;
+  --state-invalid-text:   #5c3800;
+
+  /* Tintes de apoyo sobre los fondos inundados del veredicto */
+  --on-granted-body:      #d7ebdf;
+  --on-granted-label:     #c6e2d2;
+  --on-duplicate-body:    #f3d6d6;
+  --on-duplicate-label:   #f0c9c9;
+  --on-invalid-body:      #f3e0be;
+  --on-invalid-label:     #ebd3a8;
+
+  /* Roles del gafete */
+  --role-mesa:            #14162a;
+  --role-delegado:        #3b49c9;
+  --role-staff:           #7a8199;
+  --role-prensa:          #14162a;
+  --role-invitado:        #ffffff;
+
+  --focus-ring:           #3b49c9;
+  --overlay:              rgb(20 22 42 / 0.56);
+  --shadow-sheet:         0 -8px 24px rgb(20 22 42 / 0.18);
+  --shadow-fab:           0 4px 12px rgb(20 22 42 / 0.24);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+[data-theme="dark"] {
+  --bg-base:         #0e0f1a;
+  --bg-sunken:       #0a0b14;
+  --surface:         #171a2b;
+  --surface-raised:  #1f2338;
+  --surface-inverse: #edeef7;
+  --surface-alt:     #1b1f31;
+
+  --border:          #2c3150;
+  --border-control:  #676e96;
+  --border-strong:   #edeef7;
+
+  --text-primary:    #edeef7;
+  --text-secondary:  #c2c6dc;
+  --text-tertiary:   #a6aac4;
+  --text-disabled:   #6b7092;
+  --text-on-accent:  #0e0f1a;
+  --text-on-inverse: #14162a;
+
+  --accent:          #6e7bff;
+  --accent-hover:    #8390ff;
+  --accent-pressed:  #5a67e8;
+  --accent-subtle:   #1b1f3a;
+
+  --focus-ring:      #6e7bff;
+  --overlay:         rgb(6 7 12 / 0.68);
+  --shadow-sheet:    0 -8px 24px rgb(0 0 0 / 0.5);
+  --shadow-fab:      0 4px 12px rgb(0 0 0 / 0.55);
 }
 
+/* El admin sigue el tema del sistema mientras no elija uno.
+   La app del despachador fuerza data-theme="dark" desde su layout. */
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  :root:not([data-theme="light"]) {
+    --bg-base:         #0e0f1a;
+    --bg-sunken:       #0a0b14;
+    --surface:         #171a2b;
+    --surface-raised:  #1f2338;
+    --surface-inverse: #edeef7;
+    --surface-alt:     #1b1f31;
+    --border:          #2c3150;
+    --border-control:  #676e96;
+    --border-strong:   #edeef7;
+    --text-primary:    #edeef7;
+    --text-secondary:  #c2c6dc;
+    --text-tertiary:   #a6aac4;
+    --text-disabled:   #6b7092;
+    --text-on-accent:  #0e0f1a;
+    --text-on-inverse: #14162a;
+    --accent:          #6e7bff;
+    --accent-hover:    #8390ff;
+    --accent-pressed:  #5a67e8;
+    --accent-subtle:   #1b1f3a;
+    --focus-ring:      #6e7bff;
+    --overlay:         rgb(6 7 12 / 0.68);
+    --shadow-sheet:    0 -8px 24px rgb(0 0 0 / 0.5);
+    --shadow-fab:      0 4px 12px rgb(0 0 0 / 0.55);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@theme inline {
+  --color-bg-base:        var(--bg-base);
+  --color-bg-sunken:      var(--bg-sunken);
+  --color-surface:        var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-inverse:var(--surface-inverse);
+  --color-surface-alt:    var(--surface-alt);
+
+  --color-line:           var(--border);
+  --color-line-control:   var(--border-control);
+  --color-line-strong:    var(--border-strong);
+
+  --color-fg:             var(--text-primary);
+  --color-fg-secondary:   var(--text-secondary);
+  --color-fg-tertiary:    var(--text-tertiary);
+  --color-fg-disabled:    var(--text-disabled);
+  --color-fg-on-accent:   var(--text-on-accent);
+  --color-fg-on-inverse:  var(--text-on-inverse);
+
+  --color-accent:         var(--accent);
+  --color-accent-hover:   var(--accent-hover);
+  --color-accent-pressed: var(--accent-pressed);
+  --color-accent-subtle:  var(--accent-subtle);
+
+  --color-granted:        var(--state-granted);
+  --color-granted-ink:    var(--state-granted-ink);
+  --color-granted-soft:   var(--state-granted-soft);
+  --color-duplicate:      var(--state-duplicate);
+  --color-duplicate-ink:  var(--state-duplicate-ink);
+  --color-invalid:        var(--state-invalid);
+  --color-invalid-ink:    var(--state-invalid-ink);
+  --color-invalid-text:   var(--state-invalid-text);
+
+  --color-on-granted-body:    var(--on-granted-body);
+  --color-on-granted-label:   var(--on-granted-label);
+  --color-on-duplicate-body:  var(--on-duplicate-body);
+  --color-on-duplicate-label: var(--on-duplicate-label);
+  --color-on-invalid-body:    var(--on-invalid-body);
+  --color-on-invalid-label:   var(--on-invalid-label);
+
+  --color-role-mesa:      var(--role-mesa);
+  --color-role-delegado:  var(--role-delegado);
+  --color-role-staff:     var(--role-staff);
+  --color-role-prensa:    var(--role-prensa);
+  --color-role-invitado:  var(--role-invitado);
+
+  --font-sans:  var(--font-plex-sans), system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-plate: var(--font-plex-condensed), var(--font-plex-sans), Impact, sans-serif;
+  --font-mono:  var(--font-plex-mono), ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* Escala tipográfica del handoff. Los pt del diseño son px aquí. */
+  --text-micro:     11px;
+  --text-micro--line-height: 1.3;
+  --text-label:     13px;
+  --text-label--line-height: 1.4;
+  --text-sub:       15px;
+  --text-sub--line-height: 1.45;
+  --text-body:      17px;
+  --text-body--line-height: 1.5;
+  --text-section:   22px;
+  --text-section--line-height: 1.25;
+  --text-title:     28px;
+  --text-title--line-height: 1.2;
+  --text-name:      32px;
+  --text-name--line-height: 1.15;
+  --text-verdict:   40px;
+  --text-verdict--line-height: 1.05;
+  --text-display:   64px;
+  --text-display--line-height: 1;
+  --text-hero:      96px;
+  --text-hero--line-height: 1;
+
+  /* Esquina viva en todo el sistema: una placa no tiene esquinas
+     redondeadas. Las dos excepciones se escriben a mano. */
+  --radius-none: 0px;
+  --radius-sm:   0px;
+  --radius-md:   0px;
+  --radius-lg:   0px;
+  --radius-xl:   0px;
+
+  --shadow-sheet: var(--shadow-sheet);
+  --shadow-fab:   var(--shadow-fab);
+
+  --ease-out:   cubic-bezier(0.2, 0, 0, 1);
+  --ease-inout: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@layer base {
+  * {
+    border-radius: 0;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background: var(--bg-base);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    font-size: 17px;
+    line-height: 1.5;
+    /* Las cifras se comparan en columnas por todo el sistema */
+    font-variant-numeric: tabular-nums;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* El escáner se opera con una mano y con prisa: ningún gesto puede
+     seleccionar texto o disparar el zoom por doble toque. */
+  [data-kiosk] {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    overscroll-behavior: none;
+    touch-action: manipulation;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+
+  /* Sobre los fondos inundados del veredicto el anillo índigo desaparece */
+  [data-verdict] :focus-visible {
+    outline-color: #ffffff;
+  }
+}
+
+@layer utilities {
+  /* Insets seguros: 47 arriba, 34 abajo en el lienzo de referencia, pero
+     tomados del dispositivo real cuando los expone. */
+  .pt-safe { padding-top: max(47px, env(safe-area-inset-top)); }
+  .pb-safe { padding-bottom: max(34px, env(safe-area-inset-bottom)); }
+  .mb-safe { margin-bottom: max(34px, env(safe-area-inset-bottom)); }
+
+  .font-plate {
+    font-family: var(--font-plate);
+    text-transform: uppercase;
+    letter-spacing: 0.01em;
+  }
+
+  .type-micro {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    line-height: 1.3;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+
+  /* El único gesto expresivo del sistema: el cuño. Aparece solo en el
+     veredicto y en el acta de cierre. */
+  .stamp {
+    font-family: var(--font-mono);
+    transform: rotate(-4deg);
+    transform-origin: left center;
+  }
+
+  .stamp-duplicate {
+    transform: rotate(-3deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  /* Excepción deliberada: el relleno de progreso del bloqueo de 2 s es
+     información (cuánto falta), no decoración. Se conserva. */
+  [data-progress] {
+    transition-duration: 2000ms !important;
+  }
 }
