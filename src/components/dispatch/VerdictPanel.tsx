@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
-import type { RedeemResponse } from "@/lib/domain/types";
+import type { RedeemResponse, ScanVerdict } from "@/lib/domain/types";
 
 /**
  * El contrato de diferenciación no es estético: un 8% de los hombres no
@@ -21,6 +21,7 @@ const LOCK_MS = {
   granted_diet: 800,
   duplicate: 2000,
   invalid: 600,
+  sin_red: 0,
 } as const;
 
 const AUTO_ADVANCE_MS = 1200;
@@ -31,7 +32,7 @@ function hora(iso: string | null | undefined) {
 }
 
 interface Props {
-  result: RedeemResponse;
+  result: ScanVerdict;
   station?: string | null;
   onContinue: () => void;
 }
@@ -41,6 +42,7 @@ export function VerdictPanel({ result, onContinue }: Props) {
   const kind =
     result.status === "granted" ? (diet ? "granted_diet" : "granted")
     : result.status === "duplicate" ? "duplicate"
+    : result.status === "sin_red" ? "sin_red"
     : "invalid";
 
   const lockMs: number = LOCK_MS[kind];
@@ -70,9 +72,12 @@ export function VerdictPanel({ result, onContinue }: Props) {
     return () => clearTimeout(t);
   }, [kind, onContinue]);
 
+  // Sin señal no es un veredicto sobre la persona: va en índigo, como la
+  // banda de conexión, y no en ámbar.
   const bg =
     kind === "duplicate" ? "var(--state-duplicate)"
     : kind === "invalid" ? "var(--state-invalid)"
+    : kind === "sin_red" ? "var(--accent)"
     : "var(--state-granted)";
 
   const body =
@@ -107,9 +112,11 @@ export function VerdictPanel({ result, onContinue }: Props) {
         )}
         {(result.status === "unknown_token" ||
           result.status === "not_eligible" ||
-          result.status === "session_closed") && (
+          result.status === "session_closed" ||
+          result.status === "fallo") && (
           <Invalid result={result} bodyColor={body} labelColor={label} />
         )}
+        {result.status === "sin_red" && <SinRed />}
       </div>
 
       <div className="px-5 pb-4">
@@ -172,11 +179,11 @@ function Granted({
       <p className="mt-6 text-name font-semibold text-balance">{result.name}</p>
       <p className="mt-3 text-body" style={{ color: bodyColor }}>{result.detail}</p>
       <p className="type-micro mt-3" style={{ color: labelColor }}>
-        {result.role} · Sin restricciones alimentarias
+        {result.role ? `${result.role} · ` : ""}Sin restricciones alimentarias
       </p>
 
       <p className="stamp type-micro mt-8 border-2 border-white/50 px-3 py-1.5" style={{ color: labelColor }}>
-        Sellado {hora(result.redeemed_at)}
+        {result.offline ? "Guardado en el teléfono" : "Sellado"} {hora(result.redeemed_at)}
       </p>
     </div>
   );
@@ -215,7 +222,7 @@ function GrantedDiet({
       <p className="mt-2 text-body" style={{ color: bodyColor }}>{result.detail}</p>
 
       <p className="stamp type-micro mt-6 self-start border-2 border-white/50 px-3 py-1.5">
-        Sellado {hora(result.redeemed_at)}
+        {result.offline ? "Guardado en el teléfono" : "Sellado"} {hora(result.redeemed_at)}
       </p>
     </div>
   );
@@ -258,10 +265,11 @@ function Duplicate({
 /* ── 08 · QR no válido ───────────────────────────────────────────────── */
 function Invalid({
   result, bodyColor, labelColor,
-}: { result: RedeemResponse; bodyColor: string; labelColor: string }) {
+}: { result: ScanVerdict; bodyColor: string; labelColor: string }) {
   const titular =
     result.status === "unknown_token" ? "Código no reconocido"
     : result.status === "not_eligible" ? "Rol sin derecho en esta sesión"
+    : result.status === "fallo" ? "No se pudo registrar"
     : "La sesión ya está cerrada";
 
   const cuerpo =
@@ -269,7 +277,9 @@ function Invalid({
       ? "Este QR no pertenece a ESMUN. Puede ser el carnet del colegio o un código de otro evento."
       : result.status === "not_eligible"
         ? `${result.name} · ${result.role ?? "otro rol"}. Esta sesión no incluye a ese rol.`
-        : "El organizador cerró la entrega. Ya no se pueden registrar canjes.";
+        : result.status === "fallo"
+          ? `El servidor respondió: ${result.message}. Vuelve a escanear; si sigue, avisa al organizador.`
+          : "El organizador cerró la entrega. Ya no se pueden registrar canjes.";
 
   return (
     <div className="flex flex-1 flex-col">
@@ -293,10 +303,30 @@ function Invalid({
 
         <p className="mt-6 text-name font-semibold text-balance">{titular}</p>
         <p className="mt-3 max-w-[300px] text-body" style={{ color: bodyColor }}>{cuerpo}</p>
-        <p className="mt-6 text-sub" style={{ color: labelColor }}>
-          Pídele el gafete de ESMUN o mándala con el organizador.
-        </p>
+        {result.status !== "fallo" && (
+          <p className="mt-6 text-sub" style={{ color: labelColor }}>
+            Pídele el gafete de ESMUN o mándala con el organizador.
+          </p>
+        )}
       </div>
+    </div>
+  );
+}
+
+/* ── 09b · Sin señal y sin lista local ───────────────────────────────── */
+function SinRed() {
+  return (
+    <div className="flex flex-1 flex-col items-center justify-center text-center">
+      <span aria-hidden className="size-16 border-[6px] border-white" />
+      <p className="font-plate mt-6 text-verdict tracking-[0.02em]">Sin señal</p>
+      <p className="mt-6 max-w-[300px] text-body text-white/85">
+        El teléfono no alcanzó a descargar la lista de esta sesión y ahora no
+        hay conexión. No se registró nada.
+      </p>
+      <p className="mt-4 max-w-[300px] text-sub text-white/70">
+        Acércate a donde haya señal, espera a que la banda azul desaparezca y
+        vuelve a escanear este gafete.
+      </p>
     </div>
   );
 }

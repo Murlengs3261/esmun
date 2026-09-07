@@ -128,9 +128,12 @@ export type RedeemResponse =
       status: "granted";
       name: string;
       detail: string;
-      role: ParticipantRole;
+      /** Falta solo en un canje hecho sin red: el padrón local no lo trae. */
+      role?: ParticipantRole;
       diet: string | null;
       redeemed_at: string;
+      /** Se registró en el teléfono y sube cuando vuelva la señal. */
+      offline?: boolean;
     }
   | {
       status: "duplicate";
@@ -149,6 +152,14 @@ export type RedeemResponse =
       reason?: string;
     }
   | { status: "session_closed"; closed_at: string | null };
+
+/** Lo que puede mostrar el panel de veredicto: la respuesta de la base o
+ *  dos estados que solo existen en el teléfono. `sin_red` es cuando no hay
+ *  señal y tampoco padrón local; `fallo` es un error que no es de red. */
+export type ScanVerdict =
+  | RedeemResponse
+  | { status: "sin_red" }
+  | { status: "fallo"; message: string };
 
 /** Una fila del padrón que el teléfono descarga al abrir la sesión. */
 export interface RosterEntry {

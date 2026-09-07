@@ -42,3 +42,14 @@ Resolución: gana el modo offline, porque una alergia no avisada es un riesgo m�
 - El padrón se borra del teléfono al cerrar la sesión o al cerrar el turno.
 
 Fuera de esa ventana, la regla original se mantiene entera: no existe ninguna política RLS que le dé a un despachador acceso a `participants`.
+
+## Modo local (implementado el 7 de septiembre de 2026)
+
+El escáner ya no depende de la red para cada lectura:
+
+- Al abrir la sesión, cada teléfono descarga el padrón de elegibles con `session_roster()` y lo guarda en IndexedDB (`src/lib/offline.ts`). Se refresca cada 10 minutos mientras hay señal y se borra al cerrar la sesión o el turno.
+- Cada canje va primero al servidor con un tope de 8 segundos. Si la llamada falla por red, el teléfono pasa a modo local: valida contra el padrón y contra lo que él mismo ya selló, guarda el canje en una cola y muestra el veredicto igual, marcado «Guardado en el teléfono».
+- Con señal, la cola sube sola cada 8 segundos, en orden y con la hora original (`p_redeemed_at`). Si el servidor responde que otro puesto ya había entregado, el canje queda como conflicto visible en `/cola`; el intento ya quedó registrado en `scan_attempts`.
+- Un teléfono sin padrón y sin señal muestra «Sin señal» en índigo y no registra nada: ese gafete hay que volver a escanearlo con conexión.
+- Límite conocido: sin red, un teléfono no puede saber lo que entregaron otros puestos. Ese duplicado lo detecta el servidor al subir la cola.
+- `/turno` (fin de turno) y `/cola` (cola pendiente) existen desde esta fecha; cerrar sesión se bloquea mientras haya canjes sin subir.

@@ -4,7 +4,8 @@ import { useState } from "react";
 import { notFound } from "next/navigation";
 import { VerdictPanel } from "@/components/dispatch/VerdictPanel";
 import { VistaPreviaQR } from "@/components/admin/VistaPreviaQR";
-import type { RedeemResponse } from "@/lib/domain/types";
+import Link from "next/link";
+import type { ScanVerdict } from "@/lib/domain/types";
 
 /**
  * Herramienta de revisión, no una pantalla del producto.
@@ -14,7 +15,7 @@ import type { RedeemResponse } from "@/lib/domain/types";
 
 const AYER = new Date(Date.now() - 3 * 60_000).toISOString();
 
-const CASOS: { id: string; etiqueta: string; nota: string; r: RedeemResponse }[] = [
+const CASOS: { id: string; etiqueta: string; nota: string; r: ScanVerdict }[] = [
   {
     id: "granted",
     etiqueta: "Habilitado",
@@ -72,10 +73,35 @@ const CASOS: { id: string; etiqueta: string; nota: string; r: RedeemResponse }[]
     nota: "Mismo ámbar, distinto texto",
     r: { status: "session_closed", closed_at: AYER },
   },
+  {
+    id: "offline",
+    etiqueta: "Habilitado sin red",
+    nota: "Igual al verde, con «Guardado en el teléfono»",
+    r: {
+      status: "granted",
+      name: "Lucía Paredes",
+      detail: "PNUMA · Chile",
+      diet: null,
+      redeemed_at: new Date().toISOString(),
+      offline: true,
+    },
+  },
+  {
+    id: "sin_red",
+    etiqueta: "Sin señal ni lista",
+    nota: "Índigo · no es un veredicto sobre la persona",
+    r: { status: "sin_red" },
+  },
+  {
+    id: "fallo",
+    etiqueta: "Error que no es de red",
+    nota: "Ámbar · muestra lo que dijo el servidor",
+    r: { status: "fallo", message: "Sin sesión válida" },
+  },
 ];
 
 export default function VistaPrevia() {
-  const [abierto, setAbierto] = useState<RedeemResponse | null>(null);
+  const [abierto, setAbierto] = useState<ScanVerdict | null>(null);
   if (process.env.NODE_ENV === "production") notFound();
 
   return (
@@ -106,6 +132,17 @@ export default function VistaPrevia() {
           </li>
         ))}
       </ul>
+
+      <h2 className="font-plate text-title">Cola pendiente</h2>
+      <p className="mt-2 text-sub text-fg-secondary">
+        La pantalla de la cola con datos de prueba en este navegador.
+      </p>
+      <Link
+        href="/vista-previa/cola"
+        className="mt-4 mb-10 flex h-14 items-center justify-center border-2 border-line-control font-plate text-section"
+      >
+        Abrir la prueba de cola
+      </Link>
 
       <h2 className="font-plate text-title">Imagen del QR</h2>
       <p className="mt-2 text-sub text-fg-secondary">
