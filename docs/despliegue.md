@@ -49,3 +49,21 @@ No hace falta configurar URLs de redirección: el ingreso es con correo y
 contraseña, sin enlaces mágicos ni OAuth. Si algún día se activa la
 recuperación de contraseña por correo, habrá que añadir el dominio de
 Vercel en Supabase › Authentication › URL Configuration.
+
+## Si el dominio devuelve «Internal Server Error»
+
+Comprobar primero qué build está en línea: `https://<dominio>/version.txt`
+muestra la fecha y el commit del despliegue que sirve ese dominio (el
+archivo se genera en `public/version.txt` con cada cambio). Si ahí sale
+un 500, ese dominio está sirviendo un build anterior al 7 de septiembre
+de 2026 y no corresponde al proyecto conectado a GitHub.
+
+Cuando el build es el actual, cualquier fallo del proxy sale escrito en
+texto plano en la propia página (qué variable falta o qué error dio
+Supabase), en vez del 500 mudo.
+
+Las URLs `esmun-<equipo>.vercel.app` y `esmun-git-main-<equipo>.vercel.app`
+piden iniciar sesión en Vercel por la «Vercel Authentication» de
+Deployment Protection. Para que las abra cualquiera hay que apagarla en
+Project → Settings → Deployment Protection, o usar el dominio de
+producción (`esmun.vercel.app` o uno propio), que nunca está protegido.
