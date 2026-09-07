@@ -1,9 +1,11 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { updateSession } from "@/lib/supabase/proxy";
 
 /** Next 16: el convenio `middleware` se renombró a `proxy`. */
 export async function proxy(request: NextRequest) {
   try {
+    // Carga diferida: si el módulo de Supabase no arranca en el servidor,
+    // el error cae en el catch de abajo en vez de tumbar el proxy entero.
+    const { updateSession } = await import("@/lib/supabase/proxy");
     return await updateSession(request);
   } catch (e) {
     // Un fallo aquí tumba todas las rutas. Decir cuál fue ahorra adivinar
