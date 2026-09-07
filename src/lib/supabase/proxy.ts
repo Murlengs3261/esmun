@@ -13,9 +13,30 @@ const PUBLIC_PATHS = ["/ingresar", "/admin/ingresar"];
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
 
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  // Sin estas dos, el cliente de Supabase revienta y Vercel solo muestra
+  // «Internal Server Error». Mejor decir qué falta y dónde se pone.
+  if (!url || !anonKey) {
+    return new NextResponse(
+      [
+        "ESMUN: faltan variables de entorno.",
+        "",
+        `NEXT_PUBLIC_SUPABASE_URL: ${url ? "ok" : "FALTA"}`,
+        `NEXT_PUBLIC_SUPABASE_ANON_KEY: ${anonKey ? "ok" : "FALTA"}`,
+        "",
+        "En Vercel: Project → Settings → Environment Variables. Después hay que",
+        "volver a desplegar (Deployments → ⋯ → Redeploy): las variables solo",
+        "entran en el siguiente build.",
+      ].join("\n"),
+      { status: 500, headers: { "content-type": "text/plain; charset=utf-8" } },
+    );
+  }
+
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    url,
+    anonKey,
     {
       cookies: {
         getAll() {
