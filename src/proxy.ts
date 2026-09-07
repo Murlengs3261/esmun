@@ -1,9 +1,19 @@
-import type { NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/proxy";
 
 /** Next 16: el convenio `middleware` se renombró a `proxy`. */
 export async function proxy(request: NextRequest) {
-  return updateSession(request);
+  try {
+    return await updateSession(request);
+  } catch (e) {
+    // Un fallo aquí tumba todas las rutas. Decir cuál fue ahorra adivinar
+    // en los registros de Vercel; no lleva claves ni datos de nadie.
+    const detalle = e instanceof Error ? `${e.name}: ${e.message}` : String(e);
+    return new NextResponse(`ESMUN: error al iniciar la sesión.\n\n${detalle}`, {
+      status: 500,
+      headers: { "content-type": "text/plain; charset=utf-8" },
+    });
+  }
 }
 
 export const config = {
